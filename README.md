@@ -8,7 +8,7 @@ hardened, sandboxed judge that runs untrusted code under bubblewrap with
 deterministic CPU-time and memory measurement.
 
 - 🌐 **Live demo:** <https://167-233-112-171.sslip.io>
-- 🎬 **Video walkthrough:** _TODO: add link before submitting_
+- 🎬 **Video walkthrough:** <https://www.youtube.com/watch?v=ul7qFvcvog4>
 
 ## Architecture (MVP)
 
@@ -120,8 +120,8 @@ Built and deployed:
   statements, live opponent panel, result overlay), built into `app/static`
   and served by FastAPI; WS auto-reconnect with `last_seq` replay.
 - **Deploy** — Hetzner + nginx + TLS (see `deploy/`).
-- **Load test** — vs design-doc SLOs (`tests/loadtest.py`, results in
-  `docs/loadtest.md`): §3.2 holds (worst-case mix 1.5 sub/s at p95 4.3 s with
-  2 workers; 12 sub/s easy mix; 1,000 sockets at 83 MB). Found and fixed two
+- **Load test** — `tests/loadtest.py`, results in `docs/loadtest.md`:
+  worst-case mix 1.5 sub/s at p95 4.3 s with 2 workers; 12 sub/s easy mix;
+  1,000 sockets at 83 MB. Found and fixed two
   load bugs: bwrap zombie leak → pids exhaustion → false CEs (`tini` as PID 1 +
   sandbox-failure detection), and bcrypt blocking the event loop (threadpool).
