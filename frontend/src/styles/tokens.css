@@ -1,0 +1,63 @@
+/* ============================================================================
+   CodeClash design tokens — promoted verbatim from the design handoff README
+   token tables. THE TOKEN VALUES ARE THE CONTRACT: component CSS Modules read
+   these vars, never raw hexes. Keep names/values 1:1 with the handoff.
+   ========================================================================== */
+
+:root {
+  /* --- color ------------------------------------------------------------- */
+  --bg: #0a0c10; /* app background (near-black, slight blue) */
+  --bg-hud: #0c0f14; /* duel HUD bar / editor gutter bg */
+  --surface: #14181f; /* cards, panels */
+  --surface-2: #11151c; /* inset stat tiles */
+  --surface-inset: #0d1116; /* code blocks, example I/O, list rows */
+  --line: #232a35; /* default border */
+  --line-2: #2c333d; /* control borders (lang toggle, ghost btns, fields) —
+                        used throughout the mock; absent from the README table */
+  --line-soft: #1c222b; /* subtle dividers inside cards */
+  --line-row: #161b22; /* list-row separators */
+  --text: #e2e7ef; /* primary text */
+  --text-2: #c0c8d2; /* body copy */
+  --text-3: #a4adba; /* secondary copy */
+  --muted: #8995a6; /* muted labels */
+  --muted-2: #6b7686; /* mono micro-labels */
+  --faint: #4a525e; /* empty-state text */
+  --you: #5aa2ff; /* YOU / primary accent (blue) */
+  --you-strong: #74b2ff; /* blue hover */
+  --you-ink: #06101f; /* text on blue buttons */
+  --opp: #f0625f; /* OPPONENT / danger (red) */
+  --win: #36c98a; /* AC / wins / positive delta (green) */
+  --gold: #f0b840; /* rating values, BAND-1 tag */
+  --warn: #f0a93c; /* TLE / MLE verdicts (amber) */
+
+  /* --- avatar fills ------------------------------------------------------ */
+  --av-you-bg: linear-gradient(150deg, #1a2740, #10161f);
+  --av-you-border: rgba(90, 162, 255, 0.5);
+  --av-you-text: #9cc4ff;
+  --av-opp-bg: linear-gradient(150deg, #3a1c1c, #1f1012);
+  --av-opp-border: rgba(240, 98, 95, 0.5);
+  --av-opp-text: #ffb0ad;
+
+  /* --- verdict pill colors ---------------------------------------------- */
+  --v-ac-fg: #36c98a;
+  --v-ac-bg: rgba(54, 201, 138, 0.12);
+  --v-ac-border: rgba(54, 201, 138, 0.4);
+  --v-warn-fg: #f0a93c; /* TLE / MLE */
+  --v-warn-bg: rgba(240, 169, 60, 0.12);
+  --v-warn-border: rgba(240, 169, 60, 0.38);
+  --v-bad-fg: #f0625f; /* WA / RE / CE (other) */
+  --v-bad-bg: rgba(240, 98, 95, 0.12);
+  --v-bad-border: rgba(240, 98, 95, 0.35);
+
+  /* --- shadows / glows --------------------------------------------------- */
+  --shadow-blue: 0 8px 24px rgba(90, 162, 255, 0.28);
+  --shadow-blue-hover: 0 10px 30px rgba(90, 162, 255, 0.4);
+  --glow-found-blue: 0 0 50px rgba(90, 162, 255, 0.35);
+  --glow-found-red: 0 0 50px rgba(240, 98, 95, 0.35);
+
+  /* --- typography -------------------------------------------------------- */
+  /* Self-hosted via @fontsource-variable (imported in main.tsx); the plain
+     family name is kept as a fallback. */
+  --font-sans: "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+}

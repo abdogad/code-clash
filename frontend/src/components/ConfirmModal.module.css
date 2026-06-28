@@ -1,0 +1,105 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 7, 10, 0.66);
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.14s ease both;
+}
+.dialog {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  padding: 26px 26px 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  animation: popIn 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.title {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.message {
+  margin: 0 0 22px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-3);
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.cancel,
+.confirm {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+}
+.cancel {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line-2);
+}
+.cancel:hover:not(:disabled) {
+  border-color: var(--muted);
+  color: var(--text-2);
+}
+.confirm {
+  background: var(--you);
+  color: var(--you-ink);
+  border: 1px solid transparent;
+}
+.confirm:hover:not(:disabled) {
+  background: var(--you-strong);
+}
+.confirm.danger {
+  background: var(--opp);
+  color: #1a0c0c;
+}
+.confirm.danger:hover:not(:disabled) {
+  background: #ff7370;
+}
+.cancel:disabled,
+.confirm:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Local keyframes: CSS-module animation references are scoped, so a
+   keyframe defined in a global stylesheet is never matched. */
+@keyframes popIn {
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

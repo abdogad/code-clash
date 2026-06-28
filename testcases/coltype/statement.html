@@ -1,0 +1,63 @@
+<h1>coltype</h1>
+<p>The <em><strong>Collatz function</strong></em>, C(<em>n</em>), on
+positive integers is:</p>
+<div class="center">
+<p><em>n</em>/2 if <em>n</em> is even and 3<em>n</em>+1 if <em>n</em> is
+odd</p>
+</div>
+<p>The <em><strong>Collatz sequence</strong></em>, CS(<em>n</em>), of a
+positive integer, <em>n</em>, is the sequence</p>
+<div class="center">
+<p>CS(<em>n</em>) = n, C(<em>n</em>), C(C(<em>n</em>)),
+C(C(C(<em>n</em>))), …</p>
+</div>
+<p>For example, CS(12) = 12, 6, 3, 10, 5, 16, 8, 4, 2, 1, 4, 2, 1, …</p>
+<p>The <em><strong>Collatz Conjecture</strong></em> (also known as the
+<em>3n+1 problem</em>) is that CS(<em>n</em>) for every positive integer
+<em>n</em> eventually ends repeating the sequence 4, 2, 1. To date, the
+status of this conjecture is still unknown. No proof has been given and
+no counterexample has been found up to very large values.</p>
+<p>Prof. Fumblemore wants to study the problem using <em>Collatz
+sequence types</em>. The <em>Collatz sequence type</em> (CST) of an
+integer <em>n</em>, CST(<em>n</em>) is a sequence of letters E and O
+(for even and odd) which describe the parity of the values in
+CS(<em>n</em>) up to but not including the first power of 2. So,</p>
+<div class="center">
+<p>CST(12) = EEOEO</p>
+</div>
+<p>Note that</p>
+<div class="center">
+<p>CS(908) = 908, 454, 227, 682, 341, 1024, 512, 256, 128, 64, 32, 16,
+8, 4, 3, 2, …</p>
+</div>
+<p>so 12 and 908 have the same CST.</p>
+<p>Prof. Fumblemore needs a program which allows him to enter a sequence
+of E’s and O’s and returns the <strong>smallest</strong> integer
+<em>n</em> for which the given sequence is CST(<em>n</em>).</p>
+<p>Notes:</p>
+<ul>
+<li><p>E’s are even numbers which are not powers of 2,</p></li>
+<li><p>O’s are odd numbers greater than 1.</p></li>
+<li><p>The last letter in a sequence must be an O (if C(<em>n</em>) is a
+power of 2, so is <em>n</em>)</p></li>
+<li><p>There can not be two O’s in succession (C(odd) = even)</p></li>
+<li><p>Since, Prof. Fumblemore does not type well, you must check that
+the input sequence is valid before attempting to find <em>n</em>. That
+is, the sequence contains only E’s and O’s, ends in O and no two O’s are
+adjacent.</p></li>
+</ul>
+<h2 class="unnumbered" id="input">Input</h2>
+<p>Input consists of one line containing a string of up to 50 letters
+composed of E’s and O’s.</p>
+<h2 class="unnumbered" id="output">Output</h2>
+<p>There is one line of output that consists of the string
+<code>INVALID</code> if the input line is invalid, or a single decimal
+integer, <em>n</em>, such that <em>n</em> is the <em>smallest</em>
+integer for which CST(<em>n</em>) is the input sequence. Input will be
+chosen such that <span class="math inline">\emph{n} \le
+2^{47}</span>.</p>
+<section class="samples">
+<h2>Samples</h2>
+<div class="sample"><div class="sample-head">Sample 1</div><div class="sample-grid"><div class="sample-pane"><div class="sample-label">Input</div><pre class="sample-io">EEOEO</pre></div><div class="sample-pane"><div class="sample-label">Output</div><pre class="sample-io">12</pre></div></div></div>
+<div class="sample"><div class="sample-head">Sample 2</div><div class="sample-grid"><div class="sample-pane"><div class="sample-label">Input</div><pre class="sample-io">EEOOEO</pre></div><div class="sample-pane"><div class="sample-label">Output</div><pre class="sample-io">INVALID</pre></div></div></div>
+</section>

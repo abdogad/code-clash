@@ -1,0 +1,57 @@
+# Production overlay (Docker) — TLS edge + judge cgroup wiring.
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Certs go in ./deploy/nginx/certs (Let's Encrypt via deploy/get-cert.sh; or
+# deploy/nginx/gen-dev-certs.sh for local self-signed).
+services:
+  app:
+    ports: !reset [] # reached only through nginx
+    restart: unless-stopped
+    environment:
+      # Secure cookies + refuses to boot without a real JWT_SECRET (config.py).
+      APP_ENV: production
+
+  judge-worker:
+    # Deterministic CPU/RSS timing needs the cgroup v2 fs mounted read-write so the
+    # worker can create per-run cgroups (sandbox.py:setup_cgroups). cgroup: host +
+    # the rw bind below provide that; rootful Docker needs no --privileged or caps.
+    cgroup: host
+    restart: unless-stopped
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    # Ubuntu blocks unprivileged user namespaces (Docker seccomp + apparmor), which
+    # bwrap's --unshare-all needs. Relax the *worker's* confinement so bwrap can
+    # start — not --privileged, no added caps; the untrusted-code sandbox is bwrap
+    # itself, unchanged. Host sysctl set by deploy/bootstrap-server.sh.
+    security_opt:
+      - seccomp=unconfined
+      - apparmor=unconfined
+    deploy:
+      replicas: 2 # multi-consumer + XAUTOCLAIM recovery; drop to 1 if RAM-pressured
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/codeclash.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/nginx/certs:/etc/nginx/certs:ro
+      - certbot_webroot:/var/www/certbot
+    depends_on:
+      app:
+        condition: service_healthy  # wait for app readiness, not just container start
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "--no-check-certificate", "https://127.0.0.1/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Restart the data tier across reboots too.
+  postgres:
+    restart: unless-stopped
+  redis:
+    restart: unless-stopped
+
+volumes:
+  certbot_webroot:

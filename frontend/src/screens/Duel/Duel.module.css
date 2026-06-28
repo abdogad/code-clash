@@ -1,0 +1,26 @@
+.grid {
+  display: grid;
+  /* Arena: two wide panes — the problem (left) and the match column (right).
+     minmax(0,1fr) lets each shrink instead of overflowing the page. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  padding: 18px 24px 28px;
+  align-items: start;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* right pane: editor on top, opponent telemetry below */
+.matchCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* below the two-pane breakpoint, stack everything in one column */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

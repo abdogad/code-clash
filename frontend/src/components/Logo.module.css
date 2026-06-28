@@ -1,0 +1,37 @@
+/* Brand mark: two overlapping 45°-rotated squares (blue + red, screen blend). */
+.logo {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+.logo i {
+  position: absolute;
+  top: 5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  transform: rotate(45deg);
+}
+.logo i:first-child {
+  left: 0;
+  background: var(--you);
+}
+.logo i:last-child {
+  left: 10px;
+  background: var(--opp);
+  mix-blend-mode: screen;
+}
+
+.sm {
+  width: 22px;
+  height: 22px;
+}
+.sm i {
+  top: 4px;
+  width: 13px;
+  height: 13px;
+}
+.sm i:last-child {
+  left: 9px;
+}

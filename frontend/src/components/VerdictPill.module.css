@@ -1,0 +1,26 @@
+.pill {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+.AC {
+  color: var(--v-ac-fg);
+  background: var(--v-ac-bg);
+  border: 1px solid var(--v-ac-border);
+}
+.TLE,
+.MLE {
+  color: var(--v-warn-fg);
+  background: var(--v-warn-bg);
+  border: 1px solid var(--v-warn-border);
+}
+.WA,
+.RE,
+.CE {
+  color: var(--v-bad-fg);
+  background: var(--v-bad-bg);
+  border: 1px solid var(--v-bad-border);
+}

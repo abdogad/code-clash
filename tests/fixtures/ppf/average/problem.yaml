@@ -1,0 +1,8 @@
+name: Average of N
+uuid: 11111111-1111-1111-1111-111111111111
+license: cc0
+source: Fixture Suite
+validator_flags: float_tolerance 1e-6
+limits:
+  time_limit: 1.0
+  memory: 256

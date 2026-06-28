@@ -1,0 +1,35 @@
+{
+  "slug": "apivotalquestion",
+  "tier1": [
+    "01"
+  ],
+  "tier2": [
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19"
+  ],
+  "checker": "tokens",
+  "title": "apivotalquestion",
+  "band": 2,
+  "rating": 1500,
+  "time_limit_ms": 3000,
+  "memory_limit_kb": 1048576,
+  "source": "2023 North America East Division Contest",
+  "license": "cc by-sa",
+  "uuid": ""
+}

@@ -1,0 +1,87 @@
+/* Initial-letter avatar on a gradient fill. side = who; size = where it appears. */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.you {
+  background: var(--av-you-bg);
+  border: 1.5px solid var(--av-you-border);
+  color: var(--av-you-text);
+}
+.opp {
+  background: var(--av-opp-bg);
+  border: 1.5px solid var(--av-opp-border);
+  color: var(--av-opp-text);
+}
+.neutral {
+  background: #1b212a;
+  border: 1px solid var(--line-2);
+  color: #aeb7c4;
+}
+
+/* sizes named by where they appear (values 1:1 with the mock) */
+.row {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 12px;
+  border-width: 1px;
+}
+.chip {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+.standing {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+.hud {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  font-size: 14px;
+  border-width: 1.5px;
+}
+.panel {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  font-size: 17px;
+}
+.result {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+.queue {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  font-size: 28px;
+  border-width: 2px;
+  box-shadow: 0 0 40px rgba(90, 162, 255, 0.3);
+}
+.versus {
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  font-size: 40px;
+  border-width: 2px;
+}
+.versus.you {
+  box-shadow: var(--glow-found-blue);
+}
+.versus.opp {
+  box-shadow: var(--glow-found-red);
+}

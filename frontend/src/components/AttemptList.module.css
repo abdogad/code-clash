@@ -1,0 +1,55 @@
+.attempt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  margin-bottom: 8px;
+  background: var(--surface-inset);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  animation: floatUp 0.25s ease both;
+}
+.note {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.time {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted-2);
+}
+
+.empty {
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--faint);
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+}
+
+/* opponent variant: slightly tighter rows, dimmer note/time */
+.compact {
+  padding: 9px 11px;
+}
+.compact .note {
+  font-size: 12px;
+  color: var(--muted);
+}
+.compact .time {
+  font-size: 11px;
+}
+
+/* Local keyframes: CSS-module animation references are scoped, so a
+   keyframe defined in a global stylesheet is never matched. */
+@keyframes floatUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

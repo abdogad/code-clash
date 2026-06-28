@@ -1,0 +1,60 @@
+<h1>forestforthetrees</h1>
+<p>You have sent a robot out into the forest, and it has gotten lost. It
+has a sensor that will detect all the trees around itself regardless of
+any occlusions, but unfortunately in this forest, all trees look alike.
+You do have a map of all trees in the forest, represented as <span
+class="math inline">(x,y)</span> points. Conveniently, since this used
+to be a tree farm, all trees are at integer coordinates, though not all
+coordinates are occupied. The robot’s sensor tells you the <span
+class="math inline">x</span> and <span class="math inline">y</span>
+distance to each tree within range, relative to the front of the robot.
+However, the robot is heading in an unknown direction relative to the
+map, so each sensor reading is given as a tuple of (distance to the
+right of the robot, distance forward of the robot) and either value can
+be negative since the robot can sense in all directions. Helpfully, the
+robot will always place itself at integer coordinates and aligned to the
+positive or negative <span class="math inline">x</span> or <span
+class="math inline">y</span> axis, and will never be at the same
+location as a tree. Can you find out where the robot is?</p>
+<h2 class="unnumbered" id="input">Input</h2>
+<p>The first line of input contains three integers: <span
+class="math inline">n_t</span>, the number of trees in the forest, <span
+class="math inline">n_s</span>, the number of trees sensed by the robot,
+and <span class="math inline">r_{max}</span>, the maximum Manhattan
+distance (sum of <span class="math inline">x</span> and <span
+class="math inline">y</span> distances) of any sensor reading. The next
+<span class="math inline">n_t</span> lines each contain two integers
+representing the <span class="math inline">(x,y)</span> locations of all
+the trees relative to a global coordinate system. The final <span
+class="math inline">n_s</span> lines each contain two integers. The
+first integer in the <span class="math inline">i^{th}</span> sensor
+reading, <span class="math inline">s_{i,x}</span>, represents the
+distance to the tree along the axis perpendicular to the robot’s heading
+and the second integer <span class="math inline">s_{i,y}</span>
+represents the distance along the axis parallel to the robot’s heading.
+You can assume that <span class="math inline">|s_{i,x}|+|s_{i,y}| \leq
+r_{max}</span> for all <span class="math inline">i</span>. You may also
+assume <span class="math inline">0 &lt; n_t \leq 5000</span>, <span
+class="math inline">0 &lt; n_s \leq
+1000</span>, <span class="math inline">0 &lt; r_{max} \leq 1000</span>,
+and all tree locations have <span class="math inline">x</span> and <span
+class="math inline">y</span> coordinates <span
+class="math inline">-100,000 \leq x,y \leq 100,000</span>.</p>
+<h2 class="unnumbered" id="output">Output</h2>
+<p>Print one of the following: the <span class="math inline">x,y</span>
+location of the robot, printed as two integers separated by a space;
+“Impossible” if there is no location in the map that could produce the
+given sensor values, or “Ambiguous” if two or more distinct locations
+and/or orientations could produce the given sensor values.</p>
+<section class="samples">
+<h2>Samples</h2>
+<div class="sample"><div class="sample-head">Sample</div><div class="sample-grid"><div class="sample-pane"><div class="sample-label">Input</div><pre class="sample-io">4 4 100
+1 1
+2 2
+2 1
+3 3
+0 1
+0 2
+-1 2
+-2 3</pre></div><div class="sample-pane"><div class="sample-label">Output</div><pre class="sample-io">0 1</pre></div></div></div>
+</section>

@@ -1,0 +1,82 @@
+<h1>walkinthewoods</h1>
+<p>Brice Bilson loves to take jogs in a nearby forest known as
+Orthogonal Woods. The forest gets that name as the paths – all two-way –
+are laid out along an orthogonal grid, with all turns being 90 degrees.
+Brice is a bit persnickety when it comes to his jogs, and always follows
+a set of rules when he reaches an intersection of two or more paths.
+These rules are</p>
+<ol>
+<li><p>If there are three remaining branches, Brice takes the middle
+one.</p></li>
+<li><p>If there are just two remaining branches, Brice takes the one on
+his left.</p></li>
+<li><p>If there are no branches to take, Brice ends his jog and walks to
+the nearest exit.</p></li>
+</ol>
+<p>Brice is persnickety in another way too. He has assigned each path an
+“interest value”, which is a positive integer indicating how interesting
+that path is to jog. The higher the value, the more interesting the path
+is. If the value of a path is <span class="math inline">n</span>, then
+Brice will jog on that path no more than <span
+class="math inline">n</span> times in his jog. After the <span
+class="math inline">n^{\mbox{th}}</span> pass that path will cease to
+exist as far as Brice is concerned (so, for example, any three-branch
+intersection using that path now becomes a two-branch intersection and
+any two-branch intersection becomes a one-branch intersection). An
+example is shown in Figure <a href="#fig:jog" data-reference-type="ref"
+data-reference="fig:jog">1</a> below:</p>
+<figure id="fig:jog" data-latex-placement="!h">
+<img src="data:image/png;base64,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" />
+<figcaption>Sample park corresponding to Sample Input 1</figcaption>
+</figure>
+<p>Suppose Brice enters the park at intersection D heading north in the
+figure on the left, where the numbers next to each path indicate his
+interest levels. His travels takes him on the route DFGCBADFGCBA at
+which point we reach the figure on the right, showing the updated
+interest levels of each path and the “removal” of the path from A to B
+since it’s now been traversed <span class="math inline">2</span> times.
+From intersection A Brice now traverses the route ADFGCBEDA at which
+point he hits a dead end and ends his jog.</p>
+<h2 class="unnumbered" id="input">Input</h2>
+<p>Input starts with two integers <span class="math inline">n</span> and
+<span class="math inline">m</span> (<span class="math inline">2 \leq n
+\leq 2\,500</span>) giving the number of intersections and the number of
+paths between intersections. The next line contains <span
+class="math inline">n</span> pairs of integers giving the locations of
+the intersections. Intersections are numbered from <span
+class="math inline">1</span> to <span class="math inline">n</span> in
+the order they are presented and all location values <span
+class="math inline">x,y</span> satisfy <span class="math inline">0 \leq
+x,y \leq 10^6</span>. After this are <span class="math inline">m</span>
+lines each containing three integers <span class="math inline">i</span>
+<span class="math inline">j</span> <span class="math inline">k</span>
+(<span class="math inline">1 \leq i,j \leq n, 1 \leq k \leq 10^6</span>)
+indicating that a path exists between intersections <span
+class="math inline">i</span> and <span class="math inline">j</span> with
+interest level <span class="math inline">k</span>. All paths will be
+either vertical or horizontal and will not touch any other vertices
+other than the specified intersection points. The final line of input
+contains an integer <span class="math inline">s</span> (<span
+class="math inline">1 \leq s \leq n</span>) and a character <span
+class="math inline">d \in \mbox{\{N,S,E,W\}}</span> indicating that
+Brice starts his jog by taking the path in direction <span
+class="math inline">d</span> from intersection <span
+class="math inline">s</span>. There will always be a path heading in
+direction <span class="math inline">d</span> from vertex <span
+class="math inline">s</span>.</p>
+<h2 class="unnumbered" id="output">Output</h2>
+<p>Output the location where Brice ends his jog.</p>
+<section class="samples">
+<h2>Samples</h2>
+<div class="sample"><div class="sample-head">Sample</div><div class="sample-grid"><div class="sample-pane"><div class="sample-label">Input</div><pre class="sample-io">7 8
+0 0 5 0 12 0 0 5 5 5 0 10 12 10
+1 2 2
+2 3 4
+4 5 5
+6 7 8
+1 4 4
+2 5 7
+3 7 4
+4 6 6
+4 N</pre></div><div class="sample-pane"><div class="sample-label">Output</div><pre class="sample-io">0 0</pre></div></div></div>
+</section>

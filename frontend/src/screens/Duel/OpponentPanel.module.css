@@ -1,0 +1,160 @@
+/* tinted opponent card (red-leaning) — literals are one-off, from the handoff */
+.telemetry {
+  background: linear-gradient(180deg, #19131480, #14181f);
+  border: 1px solid #2a2326;
+  border-radius: 14px;
+  padding: 18px 18px 16px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--opp);
+}
+.conn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+}
+.conn .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.online {
+  color: var(--win);
+}
+.online .dot {
+  background: var(--win);
+}
+.offline {
+  color: var(--muted-2);
+}
+.offline .dot {
+  background: var(--muted-2);
+}
+
+.id {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 16px;
+}
+.name {
+  font-weight: 700;
+  font-size: 15px;
+}
+.rating {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--opp);
+}
+
+.status {
+  background: var(--surface-inset);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 13px;
+  margin-bottom: 14px;
+}
+.statusLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted-2);
+  margin-bottom: 8px;
+}
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--opp);
+  animation: pulseDot 1.1s ease-in-out infinite;
+}
+.statusText {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* indeterminate red sweep while the opponent is judging */
+.sweep {
+  margin-top: 10px;
+  height: 4px;
+  background: var(--line-soft);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.sweepFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, transparent, var(--opp), transparent);
+  animation: judgeBar 1.1s linear infinite;
+}
+/* determinate fill, driven by the opponent's streamed per-test progress */
+.sweepBar {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--opp), #ff8b88);
+  transition: width 0.3s ease;
+}
+.sweepCount {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-2);
+}
+
+.attemptsLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted-2);
+  margin-bottom: 10px;
+}
+.foot {
+  font-size: 11px;
+  color: var(--faint);
+  line-height: 1.5;
+  margin-top: 14px;
+}
+
+/* Local keyframes: CSS-module animation references are scoped, so a
+   keyframe defined in a global stylesheet is never matched. */
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes judgeBar {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}

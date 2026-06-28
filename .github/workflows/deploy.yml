@@ -1,0 +1,85 @@
+# Push-to-deploy: rsync the working tree to the server, then
+# `docker compose ... up -d --build` so the box rebuilds its images in place.
+# No container registry — the server builds app + judge locally, and a registry
+# would be extra moving parts for a single-box deploy.
+#
+# Configure once:
+#   - secret SSH_PRIVATE_KEY : a key whose public half is in the server's
+#                              root ~/.ssh/authorized_keys
+#   - secret DEPLOY_HOST     : the server IP / hostname (kept out of the repo)
+#   - the host firewall must allow inbound 22 (GitHub-hosted runners connect
+#     from rotating public IPs).
+name: Deploy to production
+
+on:
+  push:
+    # Default branch is `main`; `master` is included so a first push on either
+    # name still deploys. Narrow this to just your real default once it's set.
+    branches: [main, master]
+  workflow_dispatch: {} # manual "Run workflow" button for redeploys/rollbacks
+
+# Never let two deploys race on the same box; queue them instead of cancelling
+# (cancelling mid-rsync could leave the tree half-written).
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DEPLOY_USER: root
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      REMOTE_DIR: /opt/codeclash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Trust the host's current key so the first connect isn't interactive.
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          cat >> ~/.ssh/config <<EOF
+          Host deploy-target
+            HostName $DEPLOY_HOST
+            User $DEPLOY_USER
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+          EOF
+
+      - name: Sync code to server
+        # Same safe excludes as the manual deploy: never ship .env (the server's
+        # production secrets) or the TLS certs, and --delete keeps the remote
+        # tree an exact mirror of the commit. .env/certs are gitignored so they
+        # aren't in the checkout anyway — the excludes stop --delete from wiping
+        # the copies already on the box.
+        run: |
+          rsync -az --delete --itemize-changes \
+            --exclude '.git' \
+            --exclude '__pycache__' --exclude '*.pyc' --exclude '.pytest_cache' \
+            --exclude '.venv' --exclude 'venv' --exclude 'node_modules' \
+            --exclude '.env' \
+            --exclude '.claude' \
+            --exclude 'deploy/nginx/certs' \
+            --exclude 'deploy/letsencrypt' \
+            ./ deploy-target:"$REMOTE_DIR"/
+
+      - name: Rebuild + restart stack
+        # `up -d --build` rebuilds every build service, but Docker's layer cache
+        # on the box means unchanged images (e.g. the expensive bubblewrap+g++
+        # judge image) are reused in seconds and only their changed containers
+        # are recreated — so a typical app-only deploy just bounces app.
+        run: |
+          ssh deploy-target \
+            "cd $REMOTE_DIR && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build"
+
+      - name: Health check
+        # Fail the deploy loudly if the TLS edge doesn't come back healthy.
+        run: |
+          ssh deploy-target 'for i in $(seq 1 20); do
+            curl -fsk https://127.0.0.1/healthz && { echo; echo "healthy"; exit 0; }
+            sleep 2
+          done; echo "health check never returned ok"; exit 1'

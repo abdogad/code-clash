@@ -1,0 +1,27 @@
+/* HUD scoreboard chip: name + rating beside an avatar. "you" sits to the left
+   of its avatar (right-aligned text); "opp" sits to the right of its avatar. */
+.player {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.meta {
+  line-height: 1.1;
+}
+.metaRight {
+  text-align: right;
+}
+.name {
+  font-weight: 700;
+  font-size: 13px;
+}
+.rating {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.you {
+  color: var(--you);
+}
+.opp {
+  color: var(--opp);
+}

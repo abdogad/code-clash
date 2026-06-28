@@ -1,0 +1,40 @@
+{
+  "slug": "broadband",
+  "tier1": [
+    "01"
+  ],
+  "tier2": [
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21"
+  ],
+  "checker": {
+    "type": "float",
+    "tol": 1e-05
+  },
+  "title": "broadband",
+  "band": 2,
+  "rating": 1500,
+  "time_limit_ms": 2000,
+  "memory_limit_kb": 262144,
+  "source": "2023 North America East Division Contest",
+  "license": "cc by-sa",
+  "uuid": ""
+}

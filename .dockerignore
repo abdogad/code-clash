@@ -1,0 +1,23 @@
+# Keep the app build context (the repo root) lean.
+.git
+.github
+.claude
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.venv
+venv
+**/node_modules
+frontend/dist
+app/static
+*.log
+.env
+deploy/nginx/certs
+deploy/letsencrypt
+design_handoff_codeclash_ui
+docs
+tests
+tools
+# Not copied by app/Dockerfile; excluding them keeps ~12MB out of the build context.
+testcases
+judge

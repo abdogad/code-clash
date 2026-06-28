@@ -1,0 +1,393 @@
+.shell {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 22px 28px 60px;
+}
+
+/* top bar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0 22px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 6px 6px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.chipMeta {
+  text-align: right;
+  line-height: 1.15;
+}
+.chipName {
+  font-weight: 600;
+  font-size: 13px;
+}
+.chipRating {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold);
+}
+.logout {
+  background: none;
+  border: 0;
+  color: var(--muted-2);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0 4px;
+  font-family: inherit;
+}
+.logout:hover {
+  color: var(--opp);
+}
+
+/* hero */
+.hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  gap: 36px;
+  align-items: center;
+  background: linear-gradient(135deg, #161b24, #11151c);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 38px 40px;
+}
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.glowRed {
+  right: -40px;
+  top: -50px;
+  width: 230px;
+  height: 230px;
+  background: radial-gradient(circle, rgba(240, 98, 95, 0.16), transparent 65%);
+}
+.glowBlue {
+  right: 140px;
+  top: -30px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(90, 162, 255, 0.14), transparent 65%);
+}
+.heroBody {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+.ranked {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  color: var(--you);
+  background: rgba(90, 162, 255, 0.1);
+  border: 1px solid rgba(90, 162, 255, 0.25);
+}
+.heroTitle {
+  font-size: 44px;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  font-weight: 800;
+  margin: 16px 0 12px;
+}
+.heroLead {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.55;
+  max-width: 440px;
+  margin: 0 0 24px;
+}
+.heroActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  justify-content: center;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px 24px;
+  border-radius: 11px;
+  background: var(--you);
+  color: var(--you-ink);
+  box-shadow: var(--shadow-blue);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.primary:hover {
+  background: var(--you-strong);
+  box-shadow: var(--shadow-blue-hover);
+}
+.primary .key {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* standing card */
+.standing {
+  position: relative;
+  z-index: 1;
+  width: 268px;
+  flex: none;
+  background: var(--surface-inset);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+}
+.standingLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--muted-2);
+  margin-bottom: 14px;
+}
+.standingId {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.standingName {
+  font-weight: 700;
+  font-size: 15px;
+}
+.standingTier {
+  font-size: 12px;
+  color: var(--muted);
+}
+.standingRating {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.standingRating b {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+.standingRating span {
+  font-size: 12px;
+  color: var(--muted);
+  padding-bottom: 6px;
+}
+.standingStats {
+  display: flex;
+  gap: 8px;
+}
+.stat {
+  flex: 1;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 9px 11px;
+}
+.statNum {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 15px;
+}
+.statGood {
+  color: var(--win);
+}
+.statLabel {
+  font-size: 10px;
+  color: var(--muted-2);
+  letter-spacing: 0.04em;
+}
+
+/* panels grid */
+.grid {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 18px;
+  margin-top: 18px;
+}
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px 22px;
+}
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.panelTitle {
+  font-size: 16px;
+  font-weight: 700;
+}
+.panelNote {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted-2);
+}
+
+/* leaderboard */
+.lbRow {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+.lbHead {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted-2);
+  padding: 0 4px 8px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.lbItem {
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--line-row);
+}
+.lbRank {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+}
+.lbPlayer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lbName {
+  font-weight: 600;
+  font-size: 14px;
+}
+.lbRating {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+}
+.lbDivider {
+  border-top: 1px dashed var(--line-2);
+  margin-top: 4px;
+}
+.lbYou {
+  padding: 10px 8px;
+  margin-top: 6px;
+  border-radius: 10px;
+  background: rgba(90, 162, 255, 0.08);
+  border: 1px solid rgba(90, 162, 255, 0.28);
+}
+.lbYou .lbRank {
+  color: var(--you);
+}
+.lbYou .lbRating {
+  color: var(--gold);
+}
+.tagYou {
+  color: var(--you);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* recent duels */
+.recentItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--line-row);
+}
+.recentBadge {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12px;
+}
+.badgeW {
+  color: var(--win);
+  background: rgba(54, 201, 138, 0.12);
+  border: 1px solid rgba(54, 201, 138, 0.35);
+}
+.badgeL {
+  color: var(--opp);
+  background: rgba(240, 98, 95, 0.12);
+  border: 1px solid rgba(240, 98, 95, 0.32);
+}
+.badgeD {
+  color: var(--muted);
+  background: rgba(137, 149, 166, 0.1);
+  border: 1px solid rgba(137, 149, 166, 0.3);
+}
+.recentMain {
+  flex: 1;
+}
+.recentOpp {
+  font-size: 14px;
+  font-weight: 600;
+}
+.recentAgo {
+  font-size: 11px;
+  color: var(--muted-2);
+}
+.recentDelta {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 14px;
+}
+.deltaUp {
+  color: var(--win);
+}
+.deltaDown {
+  color: var(--opp);
+}
+.deltaFlat {
+  color: var(--muted);
+}
+.emptyLine {
+  padding: 12px;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+@media (max-width: 860px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .standing {
+    width: auto;
+  }
+  .heroTitle {
+    font-size: 34px;
+  }
+}

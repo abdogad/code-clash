@@ -1,0 +1,83 @@
+# Dev compose; the production overlay (TLS edge, judge cgroup wiring) is in
+# docker-compose.prod.yml.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: codeclash
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-codeclash}
+      POSTGRES_DB: codeclash
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      # Schema + seed are applied by the app at startup (migrate.py), not initdb.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codeclash"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  redis:
+    image: redis:7-alpine
+    # noeviction: the submission/verdict streams must never be evicted
+    command: redis-server --save 60 1 --appendonly yes --maxmemory 512mb --maxmemory-policy noeviction
+    networks: [default, judge_net]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  app:
+    build: # repo-root context so the Dockerfile can build frontend/ too
+      context: .
+      dockerfile: app/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://codeclash:${PG_PASSWORD:-codeclash}@postgres:5432/codeclash
+      REDIS_URL: redis://redis:6379/0
+      APP_ENV: ${APP_ENV:-dev} # prod overlay sets this to "production"
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      DUEL_GRACE_SECONDS: ${DUEL_GRACE_SECONDS:-60} # lower it to exercise the disconnect→forfeit path quickly
+      DUEL_CAP_SECONDS: ${DUEL_CAP_SECONDS:-1800}
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:8000:8000"
+    # Gates nginx until the app's lifespan startup finishes. CMD-SHELL (not exec):
+    # podman-compose re-splits exec argv on whitespace, mangling the python -c payload.
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')\""]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+
+  judge-worker:
+    build: ./judge
+    # Deterministic CPU/RSS timing needs the cgroup fs mounted rw; the dev stack
+    # can't, so it falls back to wall-clock (the prod overlay enables it).
+    deploy:
+      replicas: 2 # exercises multi-consumer + XAUTOCLAIM crash recovery
+    pids_limit: 128 # fork-bomb hard cap
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      # Compiled-checker cache: built once, shared by both replicas, persisted
+      # across redeploys.
+      CHECKER_CACHE_DIR: /cache
+    depends_on:
+      redis: { condition: service_healthy }
+    networks: [judge_net] # internal-only: no internet route, no Postgres route
+    volumes:
+      - ./testcases:/testcases:ro,z
+      - checker_cache:/cache
+
+networks:
+  judge_net:
+    internal: true
+
+volumes:
+  pg_data:
+  redis_data:
+  checker_cache:

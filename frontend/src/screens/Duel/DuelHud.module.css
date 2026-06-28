@@ -1,0 +1,171 @@
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 62px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--bg-hud);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+.score {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: none;
+}
+.player {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.player:first-child {
+  align-items: flex-end;
+}
+.player:last-child {
+  align-items: flex-start;
+}
+.vs {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--faint);
+  padding-top: 11px;
+}
+
+/* live per-player progress under each chip */
+.pip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 132px;
+}
+.player:first-child .pip {
+  align-items: flex-end;
+}
+.pipTrack {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  overflow: hidden;
+}
+.pipBar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+.pipBar.you {
+  background: var(--you);
+}
+.pipBar.opp {
+  background: var(--opp);
+}
+.pipSweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--muted), transparent);
+  animation: pipSweep 1.1s ease-in-out infinite;
+}
+.pipLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.pipOff {
+  color: var(--opp);
+}
+@keyframes pipSweep {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+.right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.timer {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.timer .cap {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* LIVE DUEL badge */
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+  border-radius: 6px;
+  color: var(--opp);
+  background: rgba(240, 98, 95, 0.1);
+  border: 1px solid rgba(240, 98, 95, 0.25);
+}
+.liveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--opp);
+  animation: pulseDot 1.2s ease-in-out infinite;
+}
+
+/* destructive ghost button (Forfeit) */
+.forfeit {
+  background: transparent;
+  color: var(--muted-2);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--line-2);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.forfeit:hover {
+  border-color: var(--opp);
+  color: var(--opp);
+}
+
+/* Local keyframes: CSS-module animation references are scoped, so a
+   keyframe defined in a global stylesheet is never matched. */
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
