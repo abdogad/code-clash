@@ -23,6 +23,12 @@ services:
       # Hard-fail (RE) rather than silently degrade to CPU-time verdicts if the
       # judge host ever loses perf access — prod is calibrated on instructions.
       JUDGE_REQUIRE_INSN: "1"
+      # Virtual-clock calibration for THIS box (AMD EPYC-Rome, 2 vCPU). Measured
+      # retirement rate under tallyrun: ~6.2M insn/ms for a tight dependency-chain
+      # loop, ~13.2M for pure independent ALU. Set above the representative-compute
+      # rate so typical solutions aren't judged stricter than wall-clock CPU; the
+      # 2e6 default (2GHz@1IPC, judging.py) was ~3x too strict on this hardware.
+      INSN_PER_MS: "8000000"
     # Ubuntu blocks unprivileged user namespaces (Docker seccomp + apparmor), which
     # bwrap's --unshare-all needs. Relax the *worker's* confinement so bwrap can
     # start — not --privileged, no added caps; the untrusted-code sandbox is bwrap
@@ -32,6 +38,12 @@ services:
     security_opt:
       - seccomp=unconfined
       - apparmor=unconfined
+      # Strip Docker's default /proc masking so bwrap can mount a *fresh* procfs
+      # inside the sandbox. Without it the kernel forbids the mount (locked mask
+      # submounts) and tallyrun falls back to binding the host /proc read-only —
+      # contestant code can then enumerate host PIDs. The untrusted boundary is
+      # bwrap, which now gets its own /proc, so this is a net hardening.
+      - systempaths=unconfined
     deploy:
       replicas: 2 # multi-consumer + XAUTOCLAIM recovery; drop to 1 if RAM-pressured
 
