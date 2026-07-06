@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 
 from checkers import compare, parse_checker
-from sandbox import MAX_OUTPUT_BYTES, PYTHON, run_sandboxed
+from sandbox import MAX_OUTPUT_BYTES, PYTHON, RunResult, run_sandboxed
 
 log = logging.getLogger("judge.judging")
 
@@ -226,7 +226,22 @@ async def judge_submission(fields: dict, on_progress=None) -> dict:
     workdir = tempfile.mkdtemp(prefix="sub-")
     checker_dir: str | None = None  # allocated only for a program checker
     try:
-        def verdict(v: str, passed: int, detail: str = "") -> dict:
+        def verdict(v: str, passed: int, detail: str = "",
+                    res: RunResult | None = None, test: str = "") -> dict:
+            # One diagnostic line per submission, logged where the verdict is
+            # decided so the decisive run's raw tallyrun JSON is on record: the
+            # ground truth behind the call (retired instructions vs cpu_ms, peak
+            # RSS, kill reason). WARNING when the host fell off the instruction
+            # counter — that silently makes verdicts load-dependent (sandbox.py).
+            degraded = res is not None and (
+                res.measurement != "full" or res.accounting != "cgroup")
+            log.log(
+                logging.WARNING if degraded else logging.INFO,
+                "judged %s %s %s %d/%d -> %s%s%s",
+                fields["submission_id"], slug, language, passed, len(tests), v,
+                f" test={test}" if test else "",
+                f" sandbox={res.raw}" if res is not None else "",
+            )
             return {
                 "submission_id": fields["submission_id"],
                 "verdict": v,
@@ -266,7 +281,8 @@ async def judge_submission(fields: dict, on_progress=None) -> dict:
             writable=lang["compile_writable"],
         )
         if res.exit_code != 0:
-            return verdict("CE", 0, _read_capped(err_path).decode(errors="replace"))
+            return verdict("CE", 0, _read_capped(err_path).decode(errors="replace"),
+                           res=res)
 
         # Custom checker: fetch its compiled binary (cached across submissions by
         # source hash — a contestant CE above never reaches here, so a broken
@@ -317,13 +333,15 @@ async def judge_submission(fields: dict, on_progress=None) -> dict:
             if (res.killed in ("instructions", "cpu") or res.timed_out
                     or used_ms > eff_time_ms
                     or res.signal == 24 or res.exit_code == 128 + 24):
-                return verdict("TLE", passed, f"test {name}: {used_ms} ms")
+                return verdict("TLE", passed, f"test {name}: {used_ms} ms",
+                               res=res, test=name)
 
             # MLE: measured peak over the limit. tallyrun caps real RSS at 1.25x,
             # so a run between 1.0x and 1.25x is measured over-limit, not OOM'd
             # early; at >=1.25x the kernel OOM-kills it (a signal, caught below).
             if res.peak_kb > eff_mem_kb:
-                return verdict("MLE", passed, f"test {name}: {res.peak_kb} kB")
+                return verdict("MLE", passed, f"test {name}: {res.peak_kb} kB",
+                               res=res, test=name)
 
             # RE: nonzero exit, or a terminating signal tallyrun didn't attribute
             # to a limit. The stderr string match reclassifies an OOM crash as MLE
@@ -335,7 +353,7 @@ async def judge_submission(fields: dict, on_progress=None) -> dict:
                                  ("MemoryError", "bad_alloc", "out of memory"))
                 last = stderr.strip().splitlines()[-1] if stderr.strip() else ""
                 return verdict("MLE" if mem_signal else "RE", passed,
-                               f"test {name}: {last}")
+                               f"test {name}: {last}", res=res, test=name)
             ans_path = problem_dir / f"{name}.out"
             if checker.kind == "program":
                 ok, why = await _run_program_checker(
@@ -347,11 +365,13 @@ async def judge_submission(fields: dict, on_progress=None) -> dict:
                     ans_path.read_bytes(),
                 )
             if not ok:
-                return verdict("WA", passed, f"test {name}: {why}" if why else f"test {name}")
+                return verdict("WA", passed,
+                               f"test {name}: {why}" if why else f"test {name}",
+                               res=res, test=name)
             passed += 1
             if on_progress is not None:
                 await on_progress(passed, len(tests))
-        return verdict("AC", passed)
+        return verdict("AC", passed, res=res)
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
         if checker_dir is not None:

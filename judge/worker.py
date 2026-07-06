@@ -82,9 +82,8 @@ async def handle(r: aioredis.Redis, msg_id: str, fields: dict) -> None:
     verdict = await judge(fields, on_progress)
     await r.xadd(VERDICTS, verdict, maxlen=VERDICTS_MAXLEN, approximate=True)
     await r.xack(SUBMISSIONS, JUDGE_GROUP, msg_id)
-    log.info(
-        "judged %s -> %s", fields.get("submission_id"), verdict["verdict"]
-    )
+    # The per-submission "judged" line (with the decisive sandbox JSON) is emitted
+    # by judge_submission itself; the internal-error path is logged in judge().
 
 
 async def main() -> None:

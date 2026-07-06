@@ -49,6 +49,8 @@ class RunResult:
     cpu_ms: int             # measured CPU time (user+sys)
     wall_ms: int
     peak_kb: int            # measured peak RSS
+    raw: str                # the exact JSON line tallyrun emitted, kept verbatim
+                            # for diagnostic logging (survives unknown-key drops)
 
     @classmethod
     def from_json(cls, line: str) -> "RunResult":
@@ -58,7 +60,7 @@ class RunResult:
             timed_out=d["timed_out"], killed=d["killed"],
             instructions=d.get("instructions"), measurement=d["measurement"],
             accounting=d["accounting"], cpu_ms=d["cpu_ms"],
-            wall_ms=d["wall_ms"], peak_kb=d["peak_kb"],
+            wall_ms=d["wall_ms"], peak_kb=d["peak_kb"], raw=line.strip(),
         )
 
 
