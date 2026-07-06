@@ -25,7 +25,7 @@ flowchart LR
   subgraph judgenet["compose network: judge_net (internal — no internet)"]
     REDIS[("Redis<br/>streams: submissions, verdicts<br/>zsets: mm:queue, leaderboard")]
     W1["judge worker ×2<br/>(pids_limit 128)"]
-    SB["bubblewrap sandbox<br/>--unshare-all · no net · ro fs<br/>rlimits: cpu, mem, fsize, nproc"]
+    SB["tallyrun sandbox (bwrap)<br/>--unshare-all · no net · ro fs<br/>seccomp · per-run cgroup<br/>instruction-counted TLE"]
   end
 
   TC[/"testcases volume (ro)<br/>mounted in workers only —<br/>never inside the sandbox"/]
@@ -60,7 +60,7 @@ sequenceDiagram
   participant DB as PostgreSQL
   participant R as Redis Streams
   participant W as Judge worker
-  participant S as bwrap sandbox
+  participant S as tallyrun sandbox
   actor O as Opponent (SPA)
 
   P->>A: POST /api/submissions {match_id, code}
@@ -146,6 +146,6 @@ stateDiagram-v2
 | Elo + leaderboard | `app/codeclash/rating/{elo,service,leaderboard}.py` |
 | Worker loop (claim → judge → ack) | `judge/worker.py` |
 | Tiered judging, verdict mapping | `judge/judging.py` |
-| Sandbox construction | `judge/sandbox.py` |
+| Sandbox invocation (tallyrun) | `judge/sandbox.py` |
 | Schema + constraints | `db/migrations/*.sql` (applied by `app/codeclash/migrate.py`) |
 | SPA | `frontend/src/` (React + TS + Vite, built into `app/static`) |

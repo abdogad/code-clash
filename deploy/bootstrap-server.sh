@@ -18,11 +18,15 @@ if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
   echo ">> Added $SUDO_USER to the docker group (log out/in to use it)."
 fi
 
-echo ">> Allowing unprivileged user namespaces (the bubblewrap judge sandbox needs them)…"
+echo ">> Kernel knobs the judge sandbox needs (user namespaces + perf)…"
 # Ubuntu 24.04+ blocks unprivileged user namespaces, which bwrap --unshare-all
-# needs from inside the judge container; re-enable host-wide.
-cat > /etc/sysctl.d/99-codeclash-userns.conf <<'EOF'
+# needs from inside the judge container; re-enable host-wide. And Ubuntu ships
+# perf_event_paranoid=4, which blocks the unprivileged perf_event_open tallyrun
+# uses for instruction counting — drop it to 2 (Fedora's default) so the judge
+# gets load-invariant instruction-based verdicts instead of degrading to CPU time.
+cat > /etc/sysctl.d/99-codeclash-judge.conf <<'EOF'
 kernel.apparmor_restrict_unprivileged_userns = 0
+kernel.perf_event_paranoid = 2
 EOF
 sysctl --system >/dev/null
 

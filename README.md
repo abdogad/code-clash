@@ -4,8 +4,8 @@
 opponent near your rating on a problem neither of you has seen, and the first
 correct submission takes the points. It combines a real-time duel experience —
 live opponent status, instant verdicts over WebSockets, Elo ratings — with a
-hardened, sandboxed judge that runs untrusted code under bubblewrap with
-deterministic CPU-time and memory measurement.
+hardened judge that runs untrusted code in [tallyrun](https://github.com/abdogad/tallyrun),
+a rootless bubblewrap sandbox with load-invariant, instruction-counted timing.
 
 - 🌐 **Live demo:** <https://167-233-112-171.sslip.io>
 - 🎬 **Video walkthrough:** <https://www.youtube.com/watch?v=ul7qFvcvog4>
@@ -58,18 +58,24 @@ python3 test_checker_cache.py      # compiled-checker cache keying
 python3 test_problem_rating.py     # per-problem Elo rating drift
 ```
 
-### Deterministic judging (CPU-time + memory via cgroups)
+### Load-invariant judging (instruction counting via tallyrun)
 
-TLE/MLE verdicts are decided on **measured CPU time and peak RSS** from a
-per-run cgroup v2 node — not wall clock — so a correct solution can't be failed
-by machine load or interpreter startup. This needs the cgroup v2 fs mounted
-read-write so the worker can create per-run cgroups. The production overlay
-(`docker-compose.prod.yml`) grants that with `cgroup: host` +
-`/sys/fs/cgroup:rw` — no `--privileged`, no added capabilities.
+Every submission runs through [**tallyrun**](https://github.com/abdogad/tallyrun),
+a rootless bubblewrap + cgroup-v2 sandbox that measures work in **retired CPU
+instructions** (a `perf_event_open` hardware counter across the process tree)
+rather than wall or CPU seconds. TLE is decided on that load-invariant "virtual
+time" (`instructions / INSN_PER_MS`), so the same solution gets the same verdict
+on an idle box and a busy one; MLE is decided on measured peak RSS from a per-run
+cgroup. Instruction counting needs a PMU and unprivileged `perf` access
+(`kernel.perf_event_paranoid ≤ 2`); the production overlay
+(`docker-compose.prod.yml`) enables it with `cgroup: host` + `/sys/fs/cgroup:rw`
+and `seccomp=unconfined` (which also unblocks `perf_event_open`), and
+`deploy/bootstrap-server.sh` sets the host sysctl — no `--privileged`, no caps.
 
-The plain `docker compose up` dev stack doesn't mount the cgroup fs rw, so
-locally the worker still judges but falls back to wall-clock timing
-(`judge/sandbox.py:setup_cgroups`).
+The plain `docker compose up` dev stack has no PMU / cgroup delegation, so
+tallyrun reports `measurement:"degraded"` and the judge falls back to measured
+CPU time, like a classic judge (`judge/judging.py`) — still runs, just
+load-dependent.
 
 **Languages:** `python` and `cpp` (g++ `-O2 -std=gnu++17`). Each problem has one
 time/memory limit; per-language multipliers in `judge/judging.py` (`LANGUAGES`)
@@ -107,10 +113,11 @@ accepted solution (fair-win rule).
 
 Built and deployed:
 
-- **Judging** — bubblewrap sandbox (net/pid/user namespaces + rlimits + pids
-  cgroup), tiered early-exit schedule, real verdicts (AC/WA/CE/TLE/MLE/RE,
-  verified adversarially). Deterministic CPU-time + peak-RSS verdicts via a
-  per-run cgroup v2 node; Python and C++ submissions.
+- **Judging** — untrusted code runs in the [tallyrun](https://github.com/abdogad/tallyrun)
+  sandbox (bubblewrap net/pid/user namespaces + seccomp + per-run cgroup),
+  tiered early-exit schedule, real verdicts (AC/WA/CE/TLE/MLE/RE, verified
+  adversarially). Load-invariant TLE from retired-instruction counting, peak-RSS
+  MLE; Python and C++ submissions.
 - **Matchmaking & duels** — Elo-window pairing with unseen-problem pick, duel
   state machine + durable `duel_events` log, WebSockets with `last_seq` replay,
   fair-win rule, admission control (409 on double submit), Elo applied on finish.

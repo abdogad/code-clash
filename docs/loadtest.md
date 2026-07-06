@@ -16,8 +16,9 @@ python3 tests/loadtest.py http | auth | judge [rates] | tle [rates] | ws [n_duel
   the container PID 1 on exit and the worker never reaped it; zombies
   accumulated to `pids_limit: 128`, after which every fork failed and
   submissions were mis-verdicted CE. Fix: `tini` as PID 1 (baked into the judge
-  image) reaps the foreign children, and `judging.py` raises on `bwrap:` stderr
-  so an infrastructure failure becomes an internal-error verdict, not a CE.
+  image) reaps the foreign children, and `judge/sandbox.py` raises when tallyrun
+  reports a sandbox-setup failure (exit 3), so an infrastructure failure becomes
+  an internal-error verdict, not a CE.
   After the fix `pids.current` holds at 3 across 1,500+ judgments.
 - **bcrypt blocked the event loop.** `hash_password` (~200 ms CPU) ran
   synchronously in the async handler, so a registration storm froze WS/API

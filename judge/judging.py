@@ -13,7 +13,6 @@ per-language CPU/memory multiplier keeps one problem limit fair across C++ and
 import hashlib
 import json
 import logging
-import math
 import os
 import shutil
 import tempfile
@@ -32,6 +31,15 @@ COMPILE_WALL_MS = 15_000          # g++ -O2 can be slow; generous
 COMPILE_CPU_S = 12
 COMPILE_MEM_KB = 512 * 1024       # g++ -O2 is memory-hungry
 MAX_VERDICT_DETAIL = 200
+
+# The virtual clock: retired instructions one millisecond of a problem's time
+# limit buys. 2e6/ms = the "2 GHz CPU retiring one instruction per cycle"
+# convention (sio2jail). A policy knob — calibrate it (and per-problem limits)
+# against reference solutions on the judging hardware; err generous, since a
+# loose budget only admits slightly slower solutions while a tight one rejects
+# correct ones. Used only when tallyrun reports measurement:"full"; a degraded
+# host (no PMU) judges on measured CPU ms instead.
+INSN_PER_MS = int(os.environ.get("INSN_PER_MS", 2_000_000))
 
 # Output-checker (jury code) limits — separate from and more generous than the
 # contestant's run budget; checker CPU is never charged against the contestant.
@@ -183,16 +191,18 @@ async def _run_program_checker(
         stdin_path="/dev/null", stdout_path=cout, stderr_path=cerr,
         cpu_seconds=CHECKER_CPU_S, memory_kb=CHECKER_MEM_KB, wall_ms=CHECKER_WALL_MS,
     )
+    # tallyrun raises on a sandbox-start failure, so any result here is the
+    # checker's own exit. testlib prints the verdict text to stderr; fall to stdout.
     stderr = _read_capped(cerr).decode(errors="replace")
-    if stderr.startswith("bwrap:"):       # sandbox couldn't start — infra, not WA
-        raise RuntimeError(f"sandbox failed to start (checker): {stderr.strip()}")
-    # testlib prints the verdict text to stderr; fall back to stdout.
     msg = stderr.strip() or _read_capped(cout).decode(errors="replace").strip()
     if res.exit_code == 0:                 # _ok
         return True, ""
     if res.exit_code in (1, 2):            # _wa / _pe (no PE verdict yet → WA)
         return False, msg
-    raise RuntimeError(f"checker failed (exit {res.exit_code}): {msg}")
+    # exit 3 (_fail) or a crash (exit_code None on a signal) — the checker broke.
+    raise RuntimeError(
+        f"checker failed (exit {res.exit_code}, signal {res.signal}): {msg}"
+    )
 
 
 async def judge_submission(fields: dict, on_progress=None) -> dict:
@@ -232,22 +242,15 @@ async def judge_submission(fields: dict, on_progress=None) -> dict:
         # Effective per-test limits after the language fairness multiplier.
         eff_time_ms = int(time_limit_ms * lang["time_mult"])
         eff_mem_kb = int(memory_limit_kb * lang["mem_mult"])
-        cpu_seconds = max(1, math.ceil(eff_time_ms / 1000)) + 1  # RLIMIT backstop
-        per_test_wall_ms = 2 * eff_time_ms + 5000  # safety net for hangs only
+        # The instruction budget is the TLE authority; RLIMIT_CPU is only a loose
+        # backstop for syscall-heavy code the counter under-measures (3x headroom).
+        insn_limit = eff_time_ms * INSN_PER_MS
+        run_cpu_s = max(1, (3 * eff_time_ms) // 1000) + 2
+        per_test_wall_ms = 2 * eff_time_ms + 5000  # hang safety net; never the verdict
 
         Path(workdir, lang["source"]).write_text(fields["code"])
         out_path = Path(workdir, "stdout")
         err_path = Path(workdir, "stderr")
-
-        def check_sandbox_ok(res) -> None:
-            # bwrap writes "bwrap: ..." and exits nonzero when the sandbox
-            # itself can't start (e.g. fork failure at the pids cap). That is
-            # our infrastructure failing, not the contestant's code — raising
-            # routes it to the worker's internal-error path instead of CE/RE.
-            if res.exit_code != 0:
-                stderr = _read_capped(err_path).decode(errors="replace")
-                if stderr.startswith("bwrap:"):
-                    raise RuntimeError(f"sandbox failed to start: {stderr.strip()}")
 
         # Compile step: Python syntax-check or C++ build. Generous, separate
         # limits — compilation time/memory is not the contestant's run budget.
@@ -262,7 +265,6 @@ async def judge_submission(fields: dict, on_progress=None) -> dict:
             wall_ms=COMPILE_WALL_MS,
             writable=lang["compile_writable"],
         )
-        check_sandbox_ok(res)
         if res.exit_code != 0:
             return verdict("CE", 0, _read_capped(err_path).decode(errors="replace"))
 
@@ -277,7 +279,7 @@ async def judge_submission(fields: dict, on_progress=None) -> dict:
             shutil.copy2(binary, Path(checker_dir) / "checker")
 
         # A correct solution passing every test under its limit must never hit
-        # this cap, so base it on the limit it is allowed to consume.
+        # this cumulative cap, so base it on the (virtual) time it may consume.
         budget_ms = eff_time_ms * len(tests) + 2000
         passed = 0
         if on_progress is not None:
@@ -288,35 +290,52 @@ async def judge_submission(fields: dict, on_progress=None) -> dict:
             res = await run_sandboxed(
                 workdir,
                 lang["run"],
-                stdin_path=problem_dir / f"{name}.in",
-                stdout_path=out_path,
-                stderr_path=err_path,
-                cpu_seconds=cpu_seconds,
+                stdin_path=str(problem_dir / f"{name}.in"),
+                stdout_path=str(out_path),
+                stderr_path=str(err_path),
+                cpu_seconds=run_cpu_s,
                 memory_kb=eff_mem_kb,
                 wall_ms=per_test_wall_ms,
-                cpu_limit_ms=eff_time_ms,
+                insn_limit=insn_limit,
             )
 
-            # TLE: measured CPU over the limit, or a genuine wall-clock hang,
-            # or the RLIMIT_CPU backstop (SIGXCPU) when no cgroup is available.
-            over_cpu = res.cpu_ms is not None and res.cpu_ms > eff_time_ms
-            if res.timed_out or over_cpu or res.exit_code == 128 + 24:
-                budget_ms -= res.cpu_ms if res.cpu_ms is not None else res.wall_ms
-                return verdict("TLE", passed, f"test {name}: {res.cpu_ms} ms")
-            check_sandbox_ok(res)
+            # Virtual time = retired instructions / INSN_PER_MS when the counter
+            # is live (load-invariant); measured CPU ms on a degraded host.
+            if res.measurement == "full" and res.instructions is not None:
+                used_ms = res.instructions // INSN_PER_MS
+            else:
+                used_ms = res.cpu_ms
+            budget_ms -= used_ms
 
-            budget_ms -= res.cpu_ms if res.cpu_ms is not None else res.wall_ms
-            if res.exit_code != 0:
+            # TLE: tallyrun hit the instruction budget, a genuine wall-clock hang,
+            # virtual time over the limit, or a CPU-time backstop on syscall-heavy
+            # code the instruction counter under-measures. That backstop is either
+            # the subtree cgroup cpu.stat kill (killed:"cpu", SIGKILL) or the
+            # per-process RLIMIT_CPU SIGXCPU (24) — and bwrap (tallyrun's child)
+            # reaps the signalled solution and exits 128+signal, so a SIGXCPU
+            # reaches us as exit_code 152, not signal 24.
+            if (res.killed in ("instructions", "cpu") or res.timed_out
+                    or used_ms > eff_time_ms
+                    or res.signal == 24 or res.exit_code == 128 + 24):
+                return verdict("TLE", passed, f"test {name}: {used_ms} ms")
+
+            # MLE: measured peak over the limit. tallyrun caps real RSS at 1.25x,
+            # so a run between 1.0x and 1.25x is measured over-limit, not OOM'd
+            # early; at >=1.25x the kernel OOM-kills it (a signal, caught below).
+            if res.peak_kb > eff_mem_kb:
+                return verdict("MLE", passed, f"test {name}: {res.peak_kb} kB")
+
+            # RE: nonzero exit, or a terminating signal tallyrun didn't attribute
+            # to a limit. The stderr string match reclassifies an OOM crash as MLE
+            # on a degraded host, where per-process peak_kb under-reports (Python
+            # MemoryError, C++/glibc out-of-memory aborts).
+            if (res.exit_code is not None and res.exit_code != 0) or res.signal is not None:
                 stderr = _read_capped(err_path).decode(errors="replace")
-                # Measured peak is authoritative; the string match is the
-                # fallback when no cgroup memory is available (Python's
-                # MemoryError, C++/glibc out-of-memory aborts).
-                over_mem = res.peak_kb is not None and res.peak_kb > eff_mem_kb
                 mem_signal = any(s in stderr for s in
                                  ("MemoryError", "bad_alloc", "out of memory"))
-                v = "MLE" if (over_mem or mem_signal) else "RE"
                 last = stderr.strip().splitlines()[-1] if stderr.strip() else ""
-                return verdict(v, passed, f"test {name}: {last}")
+                return verdict("MLE" if mem_signal else "RE", passed,
+                               f"test {name}: {last}")
             ans_path = problem_dir / f"{name}.out"
             if checker.kind == "program":
                 ok, why = await _run_program_checker(

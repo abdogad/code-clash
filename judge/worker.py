@@ -15,7 +15,6 @@ import socket
 import redis.asyncio as aioredis
 
 from judging import judge_submission
-from sandbox import setup_cgroups
 
 # Mirrors app/codeclash/streams.py — keep in sync.
 SUBMISSIONS = "stream:submissions"
@@ -90,7 +89,8 @@ async def handle(r: aioredis.Redis, msg_id: str, fields: dict) -> None:
 
 async def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
-    setup_cgroups()  # enable per-run CPU/memory accounting (deterministic timing)
+    # Per-run CPU/memory/instruction accounting is set up by the tallyrun binary
+    # itself, once per run (sandbox.py) — no worker-startup cgroup wiring needed.
     r = aioredis.from_url(REDIS_URL, decode_responses=True)
     try:
         await r.xgroup_create(SUBMISSIONS, JUDGE_GROUP, id="0", mkstream=True)

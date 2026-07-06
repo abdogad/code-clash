@@ -56,8 +56,9 @@ services:
 
   judge-worker:
     build: ./judge
-    # Deterministic CPU/RSS timing needs the cgroup fs mounted rw; the dev stack
-    # can't, so it falls back to wall-clock (the prod overlay enables it).
+    # Load-invariant (instruction-based) verdicts need a PMU + cgroup delegation,
+    # which the dev stack lacks; tallyrun reports measurement:"degraded" and the
+    # judge falls back to measured CPU time (the prod overlay enables the real path).
     deploy:
       replicas: 2 # exercises multi-consumer + XAUTOCLAIM crash recovery
     pids_limit: 128 # fork-bomb hard cap

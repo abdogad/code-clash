@@ -11,17 +11,24 @@ services:
       APP_ENV: production
 
   judge-worker:
-    # Deterministic CPU/RSS timing needs the cgroup v2 fs mounted read-write so the
-    # worker can create per-run cgroups (sandbox.py:setup_cgroups). cgroup: host +
-    # the rw bind below provide that; rootful Docker needs no --privileged or caps.
+    # Instruction-counted, load-invariant verdicts need the cgroup v2 fs mounted
+    # read-write so tallyrun can create its per-run cgroups (subtree CPU/RSS +
+    # memory cap). cgroup: host + the rw bind below provide that; rootful Docker
+    # needs no --privileged or caps.
     cgroup: host
     restart: unless-stopped
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    environment:
+      # Hard-fail (RE) rather than silently degrade to CPU-time verdicts if the
+      # judge host ever loses perf access — prod is calibrated on instructions.
+      JUDGE_REQUIRE_INSN: "1"
     # Ubuntu blocks unprivileged user namespaces (Docker seccomp + apparmor), which
     # bwrap's --unshare-all needs. Relax the *worker's* confinement so bwrap can
     # start — not --privileged, no added caps; the untrusted-code sandbox is bwrap
-    # itself, unchanged. Host sysctl set by deploy/bootstrap-server.sh.
+    # itself, unchanged. seccomp=unconfined also unblocks perf_event_open, which
+    # the default profile denies — that is what enables instruction counting. Host
+    # sysctls (userns + perf_event_paranoid) set by deploy/bootstrap-server.sh.
     security_opt:
       - seccomp=unconfined
       - apparmor=unconfined
