@@ -7,7 +7,6 @@ live opponent status, instant verdicts over WebSockets, Elo ratings — with a
 hardened judge that runs untrusted code in [tallyrun](https://github.com/abdogad/tallyrun),
 a rootless bubblewrap sandbox with load-invariant, instruction-counted timing.
 
-- 🌐 **Live demo:** <https://167-233-112-171.sslip.io>
 - 🎬 **Video walkthrough:** <https://www.youtube.com/watch?v=ul7qFvcvog4>
 
 ## Architecture (MVP)

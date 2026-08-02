@@ -12,10 +12,6 @@
 name: Deploy to production
 
 on:
-  push:
-    # Default branch is `main`; `master` is included so a first push on either
-    # name still deploys. Narrow this to just your real default once it's set.
-    branches: [main, master]
   workflow_dispatch: {} # manual "Run workflow" button for redeploys/rollbacks
 
 # Never let two deploys race on the same box; queue them instead of cancelling
