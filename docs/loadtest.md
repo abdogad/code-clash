@@ -10,21 +10,6 @@ latency. Run phases with:
 python3 tests/loadtest.py http | auth | judge [rates] | tle [rates] | ws [n_duels]
 ```
 
-## Issues found and fixed
-
-- **Sandbox zombie leak → false CEs.** bwrap's in-namespace init reparents to
-  the container PID 1 on exit and the worker never reaped it; zombies
-  accumulated to `pids_limit: 128`, after which every fork failed and
-  submissions were mis-verdicted CE. Fix: `tini` as PID 1 (baked into the judge
-  image) reaps the foreign children, and `judge/sandbox.py` raises when tallyrun
-  reports a sandbox-setup failure (exit 3), so an infrastructure failure becomes
-  an internal-error verdict, not a CE.
-  After the fix `pids.current` holds at 3 across 1,500+ judgments.
-- **bcrypt blocked the event loop.** `hash_password` (~200 ms CPU) ran
-  synchronously in the async handler, so a registration storm froze WS/API
-  responses (`/healthz` p95 → 1 s). Fix: `run_in_threadpool` for hash/verify.
-  Register throughput 5/s → 43/s; `/healthz` p95 under the same storm → 1.5 ms.
-
 ## Results
 
 ### HTTP reads (10 s per row)
